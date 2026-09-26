@@ -10,10 +10,12 @@ const els = {
   quizState: document.querySelector("#quizState"),
   resultState: document.querySelector("#resultState"),
   reviewState: document.querySelector("#reviewState"),
+  mistakesState: document.querySelector("#mistakesState"),
   questionProgress: document.querySelector("#questionProgress"),
   scorePill: document.querySelector("#scorePill"),
   progressBar: document.querySelector("#progressBar"),
   questionText: document.querySelector("#questionText"),
+  questionHint: document.querySelector("#questionHint"),
   answerArea: document.querySelector("#answerArea"),
   feedback: document.querySelector("#feedback"),
   checkButton: document.querySelector("#checkButton"),
@@ -25,7 +27,12 @@ const els = {
   reviewButton: document.querySelector("#reviewButton"),
   againButton: document.querySelector("#againButton"),
   reviewList: document.querySelector("#reviewList"),
-  backToResultButton: document.querySelector("#backToResultButton")
+  backToResultButton: document.querySelector("#backToResultButton"),
+  wrongAnswersButton: document.querySelector("#wrongAnswersButton"),
+  wrongAnswersCount: document.querySelector("#wrongAnswersCount"),
+  mistakesList: document.querySelector("#mistakesList"),
+  clearMistakesButton: document.querySelector("#clearMistakesButton"),
+  backToSetupButton: document.querySelector("#backToSetupButton")
 };
 
 const i18n = {
@@ -45,10 +52,11 @@ const i18n = {
     medium: "Medium",
     hard: "Hard",
     type: "Type",
-    mixed: "Mixed",
-    choice: "Multiple Choice",
+    choice: "Choices",
     trueFalse: "True / False",
     short: "Short Answer",
+    singleChoiceHint: "Choose one answer.",
+    multipleChoiceHint: "Choose {count} answers.",
     questionCount: "Number of questions",
     startQuiz: "Start Quiz",
     ready: "Ready",
@@ -56,6 +64,12 @@ const i18n = {
     emptyBody:
       "The quiz adapts to your selected topic, level, and question type. Results include corrections and explanations.",
     checkAnswer: "Check Answer",
+    wrongAnswers: "Wrong Answers",
+    mistakesTitle: "Questions to review",
+    mistakesIntro: "These questions are saved in this browser so you can revisit them anytime.",
+    clearWrongAnswers: "Clear Wrong Answers",
+    backToSetup: "Back",
+    noWrongAnswers: "No wrong answers saved yet.",
     next: "Next",
     finishQuiz: "Finish Quiz",
     quizComplete: "Quiz Complete",
@@ -81,7 +95,8 @@ const i18n = {
     false: "False",
     yourAnswer: "Your answer:",
     explanation: "Explanation:",
-    blank: "(blank)"
+    blank: "(blank)",
+    selectAtLeastOneType: "Select at least one question type."
   },
   ko: {
     pageTitle: "백엔드 퀴즈 랩",
@@ -99,10 +114,11 @@ const i18n = {
     medium: "보통",
     hard: "어려움",
     type: "문제 유형",
-    mixed: "혼합형",
-    choice: "객관식",
+    choice: "선택형",
     trueFalse: "참 / 거짓",
     short: "단답형",
+    singleChoiceHint: "정답 하나를 선택하세요.",
+    multipleChoiceHint: "정답 {count}개를 선택하세요.",
     questionCount: "문항 수",
     startQuiz: "퀴즈 시작",
     ready: "준비 완료",
@@ -110,6 +126,12 @@ const i18n = {
     emptyBody:
       "선택한 주제, 난이도, 문제 유형에 맞춰 퀴즈가 구성됩니다. 결과에서 정답과 해설을 확인할 수 있습니다.",
     checkAnswer: "정답 확인",
+    wrongAnswers: "오답 모음",
+    mistakesTitle: "복습할 문제",
+    mistakesIntro: "이 문제들은 이 브라우저에 저장되므로 언제든 다시 볼 수 있습니다.",
+    clearWrongAnswers: "오답 비우기",
+    backToSetup: "돌아가기",
+    noWrongAnswers: "아직 저장된 오답이 없습니다.",
     next: "다음",
     finishQuiz: "퀴즈 끝내기",
     quizComplete: "퀴즈 완료",
@@ -135,7 +157,8 @@ const i18n = {
     false: "거짓",
     yourAnswer: "내 답:",
     explanation: "해설:",
-    blank: "(빈 답안)"
+    blank: "(빈 답안)",
+    selectAtLeastOneType: "문제 유형을 하나 이상 선택해 주세요."
   },
   zh: {
     pageTitle: "後端練習 Quiz Lab",
@@ -153,10 +176,11 @@ const i18n = {
     medium: "中等",
     hard: "困難",
     type: "題型",
-    mixed: "混合題型",
     choice: "選擇題",
     trueFalse: "是非題",
     short: "簡答題",
+    singleChoiceHint: "請選擇一個答案。",
+    multipleChoiceHint: "請選擇 {count} 個答案。",
     questionCount: "題數",
     startQuiz: "開始測驗",
     ready: "準備好了",
@@ -164,6 +188,12 @@ const i18n = {
     emptyBody:
       "測驗會依照你選擇的主題、難度與題型出題。結果頁會包含訂正與解釋。",
     checkAnswer: "檢查答案",
+    wrongAnswers: "錯題整理",
+    mistakesTitle: "待複習題目",
+    mistakesIntro: "這些題目會儲存在此瀏覽器中，方便你隨時回來複習。",
+    clearWrongAnswers: "清除錯題",
+    backToSetup: "返回",
+    noWrongAnswers: "目前沒有儲存的錯題。",
     next: "下一題",
     finishQuiz: "完成測驗",
     quizComplete: "測驗完成",
@@ -189,7 +219,8 @@ const i18n = {
     false: "否",
     yourAnswer: "你的答案：",
     explanation: "解釋：",
-    blank: "（空白）"
+    blank: "（空白）",
+    selectAtLeastOneType: "請至少選擇一種題型。"
   }
 };
 
@@ -198,6 +229,7 @@ const state = {
   currentIndex: 0,
   answers: [],
   checked: false,
+  wrongAnswers: JSON.parse(localStorage.getItem("quizWrongAnswers") || "[]"),
   language: localStorage.getItem("quizLanguage") || "en"
 };
 
@@ -273,8 +305,12 @@ function getSelectedRadio(name) {
   return document.querySelector(`input[name="${name}"]:checked`).value;
 }
 
+function getSelectedTypes() {
+  return [...document.querySelectorAll('input[name="type"]:checked')].map((input) => input.value);
+}
+
 function setView(viewName) {
-  for (const key of ["emptyState", "quizState", "resultState", "reviewState"]) {
+  for (const key of ["emptyState", "quizState", "resultState", "reviewState", "mistakesState"]) {
     els[key].classList.toggle("hidden", key !== viewName);
   }
 }
@@ -288,6 +324,7 @@ function applyTranslations() {
     node.textContent = t(node.dataset.i18n);
   });
   updateAvailability();
+  updateWrongAnswersButton();
 
   if (!els.quizState.classList.contains("hidden") && state.questions.length) {
     renderQuestion();
@@ -300,6 +337,31 @@ function applyTranslations() {
   if (!els.reviewState.classList.contains("hidden") && state.answers.length) {
     renderReview();
   }
+
+  if (!els.mistakesState.classList.contains("hidden")) {
+    renderWrongAnswers();
+  }
+}
+
+function questionKey(question) {
+  return `${question.topic}|${question.level}|${question.type}|${question.question}`;
+}
+
+function updateWrongAnswersButton() {
+  els.wrongAnswersButton.querySelector("[data-i18n]").textContent = t("wrongAnswers");
+  els.wrongAnswersCount.textContent = state.wrongAnswers.length;
+}
+
+function saveWrongAnswer(question, userAnswer) {
+  const key = questionKey(question);
+  const existing = state.wrongAnswers.find((item) => item.key === key);
+  if (existing) {
+    existing.userAnswer = userAnswer;
+  } else {
+    state.wrongAnswers.push({ key, question, userAnswer });
+  }
+  localStorage.setItem("quizWrongAnswers", JSON.stringify(state.wrongAnswers));
+  updateWrongAnswersButton();
 }
 
 function populateTopics() {
@@ -317,25 +379,24 @@ function populateTopics() {
 function matchingQuestions() {
   const topic = els.topicSelect.value;
   const level = getSelectedRadio("level");
-  const type = getSelectedRadio("type");
+  const types = getSelectedTypes();
   return window.QUESTION_BANK.filter(
-    (item) => item.topic === topic && item.level === level && (type === "mixed" || item.type === type)
+    (item) => item.topic === topic && item.level === level && types.includes(item.type)
   );
 }
 
 function buildQuizQuestions() {
   const topic = els.topicSelect.value;
   const level = getSelectedRadio("level");
-  const type = getSelectedRadio("type");
+  const types = getSelectedTypes();
   const requested = Number(els.countSelect.value);
-  const exactType = (item) => type === "mixed" || item.type === type;
+  if (!types.length) return [];
+  const exactType = (item) => types.includes(item.type);
   const buckets = [
     (item) => item.topic === topic && item.level === level && exactType(item),
-    (item) => item.topic === topic && item.level === level,
     (item) => item.topic === topic && exactType(item),
-    (item) => item.topic === topic,
     (item) => item.level === level && exactType(item),
-    () => true
+    exactType
   ];
   const picked = [];
   const seen = new Set();
@@ -357,8 +418,15 @@ function buildQuizQuestions() {
 function updateAvailability() {
   const available = matchingQuestions().length;
   const requested = Number(els.countSelect.value);
-  const typeLabel = t(getSelectedRadio("type"));
+  const types = getSelectedTypes();
+  const typeLabel = types.map((type) => t(type)).join(", ");
   const fillable = Math.min(requested, buildQuizQuestions().length);
+
+  if (!types.length) {
+    els.availabilityNote.textContent = t("selectAtLeastOneType");
+    els.startButton.disabled = true;
+    return;
+  }
 
   els.availabilityNote.textContent =
     available >= requested
@@ -394,6 +462,13 @@ function renderQuestion() {
   });
   els.progressBar.style.width = `${((number - 1) / total) * 100}%`;
   els.questionText.textContent = displayQuestion.question;
+  const answerCount = Array.isArray(question.answer) ? question.answer.length : 1;
+  const hint = question.type === "choice"
+    ? answerCount > 1
+      ? t("multipleChoiceHint", { count: answerCount })
+      : t("singleChoiceHint")
+    : "";
+  els.questionHint.textContent = hint;
   els.feedback.className = "feedback hidden";
   els.feedback.textContent = "";
   els.checkButton.classList.remove("hidden");
@@ -402,11 +477,12 @@ function renderQuestion() {
   state.checked = false;
 
   if (question.type === "choice") {
+    const multiple = Array.isArray(question.answer) && question.answer.length > 1;
     els.answerArea.innerHTML = question.options
       .map(
         (option, index) => `
           <label class="choice-option">
-            <input type="radio" name="answer" value="${escapeHtml(option)}" ${index === 0 ? "checked" : ""} />
+            <input type="${multiple ? "checkbox" : "radio"}" name="answer" value="${escapeHtml(option)}" />
             <span>${escapeHtml(option)}</span>
           </label>
         `
@@ -452,14 +528,20 @@ function getUserAnswer() {
     return document.querySelector("#shortAnswer").value;
   }
 
-  const selected = document.querySelector('input[name="answer"]:checked');
-  return selected ? selected.value : "";
+  const selected = [...document.querySelectorAll('input[name="answer"]:checked')].map((input) => input.value);
+  return Array.isArray(question.answer) ? selected : selected[0] || "";
 }
 
 function isCorrectAnswer(question, userAnswer) {
   if (question.type === "short") {
     const accepted = Array.isArray(question.answer) ? question.answer : [question.answer];
     return accepted.some((answer) => normalize(answer) === normalize(userAnswer));
+  }
+
+  if (Array.isArray(question.answer)) {
+    const expected = question.answer.map(normalize).sort();
+    const actual = (Array.isArray(userAnswer) ? userAnswer : [userAnswer]).map(normalize).sort();
+    return expected.length === actual.length && expected.every((answer, index) => answer === actual[index]);
   }
 
   return normalize(question.answer) === normalize(userAnswer);
@@ -483,13 +565,15 @@ function checkAnswer() {
     userAnswer,
     correct
   });
+  if (!correct) saveWrongAnswer(question, userAnswer);
   state.checked = true;
 
   els.feedback.className = `feedback ${correct ? "correct" : "wrong"}`;
+  const correctAnswer = Array.isArray(question.answer) ? question.answer.join(", ") : question.answer;
   els.feedback.innerHTML = correct
     ? `<strong>${escapeHtml(t("correctFeedback"))}</strong> ${escapeHtml(question.explanation)}`
     : `<strong>${escapeHtml(t("wrongFeedback"))}</strong> ${escapeHtml(t("correctAnswer"))} <strong>${escapeHtml(
-        Array.isArray(question.answer) ? question.answer[0] : question.answer
+        correctAnswer
       )}</strong><br>${escapeHtml(question.explanation)}`;
 
   els.progressBar.style.width = `${((state.currentIndex + 1) / state.questions.length) * 100}%`;
@@ -528,7 +612,7 @@ function renderReview() {
   els.reviewList.innerHTML = state.answers
     .map((item, index) => {
       const displayQuestion = localizedQuestion(item.question);
-      const answer = Array.isArray(item.question.answer) ? item.question.answer[0] : item.question.answer;
+      const answer = Array.isArray(item.question.answer) ? item.question.answer.join(", ") : item.question.answer;
       return `
         <article class="review-item ${item.correct ? "correct" : "wrong"}">
           <h3>${index + 1}. ${escapeHtml(displayQuestion.question)}</h3>
@@ -540,6 +624,28 @@ function renderReview() {
     })
     .join("");
   setView("reviewState");
+}
+
+function renderWrongAnswers() {
+  if (!state.wrongAnswers.length) {
+    els.mistakesList.innerHTML = `<p class="mistakes-intro">${escapeHtml(t("noWrongAnswers"))}</p>`;
+  } else {
+    els.mistakesList.innerHTML = state.wrongAnswers
+      .map((item, index) => {
+        const question = localizedQuestion(item.question);
+        const answer = Array.isArray(question.answer) ? question.answer.join(", ") : question.answer;
+        return `<article class="review-item wrong"><h3>${index + 1}. ${escapeHtml(question.question)}</h3><p><strong>${escapeHtml(t("yourAnswer"))}</strong> ${escapeHtml(Array.isArray(item.userAnswer) ? item.userAnswer.join(", ") : item.userAnswer || t("blank"))}</p><p><strong>${escapeHtml(t("correctAnswer"))}</strong> ${escapeHtml(answer)}</p><p><strong>${escapeHtml(t("explanation"))}</strong> ${escapeHtml(question.explanation)}</p></article>`;
+      })
+      .join("");
+  }
+  setView("mistakesState");
+}
+
+function clearWrongAnswers() {
+  state.wrongAnswers = [];
+  localStorage.removeItem("quizWrongAnswers");
+  updateWrongAnswersButton();
+  renderWrongAnswers();
 }
 
 function resetQuiz() {
@@ -568,6 +674,9 @@ els.nextButton.addEventListener("click", nextQuestion);
 els.reviewButton.addEventListener("click", renderReview);
 els.againButton.addEventListener("click", resetQuiz);
 els.backToResultButton.addEventListener("click", () => setView("resultState"));
+els.wrongAnswersButton.addEventListener("click", renderWrongAnswers);
+els.clearMistakesButton.addEventListener("click", clearWrongAnswers);
+els.backToSetupButton.addEventListener("click", () => setView("emptyState"));
 els.topicSelect.addEventListener("change", updateAvailability);
 els.countSelect.addEventListener("change", updateAvailability);
 document.querySelectorAll('input[name="level"], input[name="type"]').forEach((input) => {

@@ -27,14 +27,14 @@
             </select>
           </label>
           <div class="hero-stats" aria-label="Question bank summary">
-          <div>
-            <span id="questionTotal">0</span>
-            <small data-i18n="questionsStat">questions</small>
-          </div>
-        </div>
-          <div>
-            <span>3</span>
-            <small data-i18n="formatsStat">formats</small>
+            <div>
+              <span id="questionTotal">0</span>
+              <small data-i18n="questionsStat">questions</small>
+            </div>
+            <div>
+              <span>3</span>
+              <small data-i18n="formatsStat">formats</small>
+            </div>
           </div>
         </div>
       </section>
@@ -65,10 +65,9 @@
           <fieldset class="field-group">
             <legend data-i18n="type">Type</legend>
             <div class="stacked-options" id="typeGroup">
-              <label><input type="radio" name="type" value="mixed" checked /><span data-i18n="mixed">Mixed</span></label>
-              <label><input type="radio" name="type" value="choice" /><span data-i18n="choice">Multiple Choice</span></label>
-              <label><input type="radio" name="type" value="trueFalse" /><span data-i18n="trueFalse">True / False</span></label>
-              <label><input type="radio" name="type" value="short" /><span data-i18n="short">Short Answer</span></label>
+              <label><input type="checkbox" name="type" value="choice" checked /><span data-i18n="choice">Choices</span></label>
+              <label><input type="checkbox" name="type" value="trueFalse" checked /><span data-i18n="trueFalse">True / False</span></label>
+              <label><input type="checkbox" name="type" value="short" checked /><span data-i18n="short">Short Answer</span></label>
             </div>
           </fieldset>
 
@@ -82,6 +81,7 @@
           </label>
 
           <button id="startButton" class="primary-button" type="button" data-i18n="startQuiz">Start Quiz</button>
+          <button id="wrongAnswersButton" class="secondary-button" type="button"><span data-i18n="wrongAnswers">Wrong Answers</span> (<span id="wrongAnswersCount">0</span>)</button>
           <p id="availabilityNote" class="note" aria-live="polite"></p>
         </aside>
 
@@ -104,6 +104,7 @@
               <div id="progressBar"></div>
             </div>
             <h2 id="questionText"></h2>
+            <p id="questionHint" class="question-hint"></p>
             <div id="answerArea" class="answer-area"></div>
             <div id="feedback" class="feedback hidden"></div>
             <div class="actions">
@@ -135,6 +136,19 @@
               <button id="backToResultButton" class="secondary-button compact" type="button" data-i18n="result">Result</button>
             </div>
             <div id="reviewList" class="review-list"></div>
+          </div>
+
+          <div id="mistakesState" class="state-panel hidden">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" data-i18n="wrongAnswers">Wrong Answers</p>
+                <h2 data-i18n="mistakesTitle">Questions to review</h2>
+              </div>
+              <button id="backToSetupButton" class="secondary-button compact" type="button" data-i18n="backToSetup">Back</button>
+            </div>
+            <p class="mistakes-intro" data-i18n="mistakesIntro">These questions are saved in this browser so you can revisit them anytime.</p>
+            <div id="mistakesList" class="review-list"></div>
+            <button id="clearMistakesButton" class="secondary-button" type="button" data-i18n="clearWrongAnswers">Clear Wrong Answers</button>
           </div>
         </section>
       </section>
