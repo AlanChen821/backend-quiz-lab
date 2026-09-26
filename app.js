@@ -11,6 +11,7 @@ const els = {
   resultState: document.querySelector("#resultState"),
   reviewState: document.querySelector("#reviewState"),
   mistakesState: document.querySelector("#mistakesState"),
+  favoritesState: document.querySelector("#favoritesState"),
   questionProgress: document.querySelector("#questionProgress"),
   scorePill: document.querySelector("#scorePill"),
   progressBar: document.querySelector("#progressBar"),
@@ -33,6 +34,12 @@ const els = {
   mistakesList: document.querySelector("#mistakesList"),
   clearMistakesButton: document.querySelector("#clearMistakesButton"),
   backToSetupButton: document.querySelector("#backToSetupButton")
+  ,favoriteButton: document.querySelector("#favoriteButton"),
+  favoritesButton: document.querySelector("#favoritesButton"),
+  favoritesCount: document.querySelector("#favoritesCount"),
+  favoritesList: document.querySelector("#favoritesList"),
+  clearFavoritesButton: document.querySelector("#clearFavoritesButton"),
+  backFromFavoritesButton: document.querySelector("#backFromFavoritesButton")
 };
 
 const i18n = {
@@ -70,6 +77,14 @@ const i18n = {
     clearWrongAnswers: "Clear Wrong Answers",
     backToSetup: "Back",
     noWrongAnswers: "No wrong answers saved yet.",
+    favorites: "Starred Questions",
+    favoritesTitle: "Questions you saved",
+    favoritesIntro: "Star questions you want to revisit later.",
+    clearFavorites: "Clear Starred Questions",
+    starQuestion: "Star question",
+    removeFavorite: "Remove star",
+    noFavorites: "No starred questions saved yet.",
+    optionDetails: "Option details:",
     next: "Next",
     finishQuiz: "Finish Quiz",
     quizComplete: "Quiz Complete",
@@ -132,6 +147,14 @@ const i18n = {
     clearWrongAnswers: "오답 비우기",
     backToSetup: "돌아가기",
     noWrongAnswers: "아직 저장된 오답이 없습니다.",
+    favorites: "별표한 문제",
+    favoritesTitle: "저장한 문제",
+    favoritesIntro: "나중에 다시 보고 싶은 문제에 별표를 표시하세요.",
+    clearFavorites: "별표한 문제 비우기",
+    starQuestion: "문제에 별표하기",
+    removeFavorite: "별표 제거",
+    noFavorites: "아직 별표한 문제가 없습니다.",
+    optionDetails: "선택지 설명:",
     next: "다음",
     finishQuiz: "퀴즈 끝내기",
     quizComplete: "퀴즈 완료",
@@ -194,6 +217,14 @@ const i18n = {
     clearWrongAnswers: "清除錯題",
     backToSetup: "返回",
     noWrongAnswers: "目前沒有儲存的錯題。",
+    favorites: "已加星號題目",
+    favoritesTitle: "你儲存的題目",
+    favoritesIntro: "為想稍後複習的題目加上星號。",
+    clearFavorites: "清除已加星號題目",
+    starQuestion: "為題目加星號",
+    removeFavorite: "移除星號",
+    noFavorites: "目前沒有已加星號的題目。",
+    optionDetails: "選項說明：",
     next: "下一題",
     finishQuiz: "完成測驗",
     quizComplete: "測驗完成",
@@ -230,6 +261,7 @@ const state = {
   answers: [],
   checked: false,
   wrongAnswers: JSON.parse(localStorage.getItem("quizWrongAnswers") || "[]"),
+  favorites: JSON.parse(localStorage.getItem("quizFavorites") || "[]"),
   language: localStorage.getItem("quizLanguage") || "en"
 };
 
@@ -310,7 +342,7 @@ function getSelectedTypes() {
 }
 
 function setView(viewName) {
-  for (const key of ["emptyState", "quizState", "resultState", "reviewState", "mistakesState"]) {
+  for (const key of ["emptyState", "quizState", "resultState", "reviewState", "mistakesState", "favoritesState"]) {
     els[key].classList.toggle("hidden", key !== viewName);
   }
 }
@@ -325,6 +357,7 @@ function applyTranslations() {
   });
   updateAvailability();
   updateWrongAnswersButton();
+  updateFavoritesButton();
 
   if (!els.quizState.classList.contains("hidden") && state.questions.length) {
     renderQuestion();
@@ -341,6 +374,10 @@ function applyTranslations() {
   if (!els.mistakesState.classList.contains("hidden")) {
     renderWrongAnswers();
   }
+
+  if (!els.favoritesState.classList.contains("hidden")) {
+    renderFavorites();
+  }
 }
 
 function questionKey(question) {
@@ -350,6 +387,35 @@ function questionKey(question) {
 function updateWrongAnswersButton() {
   els.wrongAnswersButton.querySelector("[data-i18n]").textContent = t("wrongAnswers");
   els.wrongAnswersCount.textContent = state.wrongAnswers.length;
+}
+
+function updateFavoritesButton() {
+  els.favoritesButton.querySelector("[data-i18n]").textContent = t("favorites");
+  els.favoritesCount.textContent = state.favorites.length;
+}
+
+function isFavorite(question) {
+  return state.favorites.some((item) => item.key === questionKey(question));
+}
+
+function updateFavoriteButton(question) {
+  const active = isFavorite(question);
+  els.favoriteButton.textContent = active ? "★" : "☆";
+  els.favoriteButton.classList.toggle("active", active);
+  els.favoriteButton.title = active ? t("removeFavorite") : t("starQuestion");
+  els.favoriteButton.setAttribute("aria-label", els.favoriteButton.title);
+}
+
+function toggleFavorite() {
+  const question = state.questions[state.currentIndex];
+  if (!question) return;
+  const key = questionKey(question);
+  const index = state.favorites.findIndex((item) => item.key === key);
+  if (index >= 0) state.favorites.splice(index, 1);
+  else state.favorites.push({ key, question });
+  localStorage.setItem("quizFavorites", JSON.stringify(state.favorites));
+  updateFavoriteButton(question);
+  updateFavoritesButton();
 }
 
 function saveWrongAnswer(question, userAnswer) {
@@ -462,6 +528,7 @@ function renderQuestion() {
   });
   els.progressBar.style.width = `${((number - 1) / total) * 100}%`;
   els.questionText.textContent = displayQuestion.question;
+  updateFavoriteButton(question);
   const answerCount = Array.isArray(question.answer) ? question.answer.length : 1;
   const hint = question.type === "choice"
     ? answerCount > 1
@@ -547,6 +614,14 @@ function isCorrectAnswer(question, userAnswer) {
   return normalize(question.answer) === normalize(userAnswer);
 }
 
+function optionExplanationHtml(question) {
+  if (!question.optionExplanations) return "";
+  const details = Object.entries(question.optionExplanations)
+    .map(([option, explanation]) => `<li><strong>${escapeHtml(option)}:</strong> ${escapeHtml(explanation)}</li>`)
+    .join("");
+  return `<br><strong>${escapeHtml(t("optionDetails"))}</strong><ul>${details}</ul>`;
+}
+
 function checkAnswer() {
   if (state.checked) return;
 
@@ -571,10 +646,10 @@ function checkAnswer() {
   els.feedback.className = `feedback ${correct ? "correct" : "wrong"}`;
   const correctAnswer = Array.isArray(question.answer) ? question.answer.join(", ") : question.answer;
   els.feedback.innerHTML = correct
-    ? `<strong>${escapeHtml(t("correctFeedback"))}</strong> ${escapeHtml(question.explanation)}`
+    ? `<strong>${escapeHtml(t("correctFeedback"))}</strong> ${escapeHtml(question.explanation)}${optionExplanationHtml(question)}`
     : `<strong>${escapeHtml(t("wrongFeedback"))}</strong> ${escapeHtml(t("correctAnswer"))} <strong>${escapeHtml(
         correctAnswer
-      )}</strong><br>${escapeHtml(question.explanation)}`;
+      )}</strong><br>${escapeHtml(question.explanation)}${optionExplanationHtml(question)}`;
 
   els.progressBar.style.width = `${((state.currentIndex + 1) / state.questions.length) * 100}%`;
   els.scorePill.textContent = t("scorePill", {
@@ -648,6 +723,28 @@ function clearWrongAnswers() {
   renderWrongAnswers();
 }
 
+function renderFavorites() {
+  if (!state.favorites.length) {
+    els.favoritesList.innerHTML = `<p class="mistakes-intro">${escapeHtml(t("noFavorites"))}</p>`;
+  } else {
+    els.favoritesList.innerHTML = state.favorites
+      .map((item, index) => {
+        const question = localizedQuestion(item.question);
+        const answer = Array.isArray(question.answer) ? question.answer.join(", ") : question.answer;
+        return `<article class="review-item"><h3>${index + 1}. ${escapeHtml(question.question)}</h3><p><strong>${escapeHtml(t("correctAnswer"))}</strong> ${escapeHtml(answer)}</p><p><strong>${escapeHtml(t("explanation"))}</strong> ${escapeHtml(question.explanation)}</p></article>`;
+      })
+      .join("");
+  }
+  setView("favoritesState");
+}
+
+function clearFavorites() {
+  state.favorites = [];
+  localStorage.removeItem("quizFavorites");
+  updateFavoritesButton();
+  renderFavorites();
+}
+
 function resetQuiz() {
   state.questions = [];
   state.currentIndex = 0;
@@ -677,6 +774,10 @@ els.backToResultButton.addEventListener("click", () => setView("resultState"));
 els.wrongAnswersButton.addEventListener("click", renderWrongAnswers);
 els.clearMistakesButton.addEventListener("click", clearWrongAnswers);
 els.backToSetupButton.addEventListener("click", () => setView("emptyState"));
+els.favoriteButton.addEventListener("click", toggleFavorite);
+els.favoritesButton.addEventListener("click", renderFavorites);
+els.clearFavoritesButton.addEventListener("click", clearFavorites);
+els.backFromFavoritesButton.addEventListener("click", () => setView("emptyState"));
 els.topicSelect.addEventListener("change", updateAvailability);
 els.countSelect.addEventListener("change", updateAvailability);
 document.querySelectorAll('input[name="level"], input[name="type"]').forEach((input) => {

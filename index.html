@@ -82,6 +82,7 @@
 
           <button id="startButton" class="primary-button" type="button" data-i18n="startQuiz">Start Quiz</button>
           <button id="wrongAnswersButton" class="secondary-button" type="button"><span data-i18n="wrongAnswers">Wrong Answers</span> (<span id="wrongAnswersCount">0</span>)</button>
+          <button id="favoritesButton" class="secondary-button" type="button"><span data-i18n="favorites">Starred Questions</span> (<span id="favoritesCount">0</span>)</button>
           <p id="availabilityNote" class="note" aria-live="polite"></p>
         </aside>
 
@@ -97,7 +98,10 @@
 
           <div id="quizState" class="state-panel hidden">
             <div class="quiz-topline">
-              <span id="questionProgress"></span>
+              <div class="question-progress-group">
+                <span id="questionProgress"></span>
+                <button id="favoriteButton" class="favorite-button" type="button" aria-label="Star question" title="Star question">☆</button>
+              </div>
               <span id="scorePill" class="pill"></span>
             </div>
             <div class="progress-track" aria-hidden="true">
@@ -149,6 +153,19 @@
             <p class="mistakes-intro" data-i18n="mistakesIntro">These questions are saved in this browser so you can revisit them anytime.</p>
             <div id="mistakesList" class="review-list"></div>
             <button id="clearMistakesButton" class="secondary-button" type="button" data-i18n="clearWrongAnswers">Clear Wrong Answers</button>
+          </div>
+
+          <div id="favoritesState" class="state-panel hidden">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" data-i18n="favorites">Starred Questions</p>
+                <h2 data-i18n="favoritesTitle">Questions you saved</h2>
+              </div>
+              <button id="backFromFavoritesButton" class="secondary-button compact" type="button" data-i18n="backToSetup">Back</button>
+            </div>
+            <p class="mistakes-intro" data-i18n="favoritesIntro">Star questions you want to revisit later.</p>
+            <div id="favoritesList" class="review-list"></div>
+            <button id="clearFavoritesButton" class="secondary-button" type="button" data-i18n="clearFavorites">Clear Starred Questions</button>
           </div>
         </section>
       </section>

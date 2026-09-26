@@ -342,6 +342,26 @@ textarea {
   font-weight: 800;
 }
 
+.question-progress-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.favorite-button {
+  border: 0;
+  padding: 0 3px;
+  background: transparent;
+  color: #a16207;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.favorite-button:hover,
+.favorite-button.active {
+  color: #d97706;
+}
+
 .pill {
   border-radius: 999px;
   background: #eaf1ff;
