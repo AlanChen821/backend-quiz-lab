@@ -496,7 +496,7 @@ window.QUESTION_BANK = [
     question: "Which Git command finds the commit that introduced a bug using binary search?",
     answer: "git bisect",
     explanation: "`git bisect` searches history to identify the first bad commit."
-  }
+  },
   {topic:"Java",level:"easy",type:"choice",question:"Which keyword creates an object in Java?",options:["new","make","create","instance"],answer:"new",explanation:"The `new` keyword allocates an object and invokes a constructor."},
   {topic:"Java",level:"easy",type:"trueFalse",question:"Java variable names are case-sensitive.",answer:"True",explanation:"`count` and `Count` are different identifiers in Java."},
   {topic:"Java",level:"easy",type:"short",question:"Which keyword declares a constant variable in Java?",answer:"final",explanation:"A `final` variable can be assigned only once."},

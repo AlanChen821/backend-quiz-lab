@@ -45,6 +45,7 @@ const i18n = {
     medium: "Medium",
     hard: "Hard",
     type: "Type",
+    mixed: "Mixed",
     choice: "Multiple Choice",
     trueFalse: "True / False",
     short: "Short Answer",
@@ -98,6 +99,7 @@ const i18n = {
     medium: "보통",
     hard: "어려움",
     type: "문제 유형",
+    mixed: "혼합형",
     choice: "객관식",
     trueFalse: "참 / 거짓",
     short: "단답형",
@@ -151,6 +153,7 @@ const i18n = {
     medium: "中等",
     hard: "困難",
     type: "題型",
+    mixed: "混合題型",
     choice: "選擇題",
     trueFalse: "是非題",
     short: "簡答題",
@@ -316,7 +319,7 @@ function matchingQuestions() {
   const level = getSelectedRadio("level");
   const type = getSelectedRadio("type");
   return window.QUESTION_BANK.filter(
-    (item) => item.topic === topic && item.level === level && item.type === type
+    (item) => item.topic === topic && item.level === level && (type === "mixed" || item.type === type)
   );
 }
 
@@ -325,12 +328,13 @@ function buildQuizQuestions() {
   const level = getSelectedRadio("level");
   const type = getSelectedRadio("type");
   const requested = Number(els.countSelect.value);
+  const exactType = (item) => type === "mixed" || item.type === type;
   const buckets = [
-    (item) => item.topic === topic && item.level === level && item.type === type,
+    (item) => item.topic === topic && item.level === level && exactType(item),
     (item) => item.topic === topic && item.level === level,
-    (item) => item.topic === topic && item.type === type,
+    (item) => item.topic === topic && exactType(item),
     (item) => item.topic === topic,
-    (item) => item.level === level && item.type === type,
+    (item) => item.level === level && exactType(item),
     () => true
   ];
   const picked = [];
