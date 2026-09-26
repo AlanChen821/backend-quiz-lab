@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backend Quiz Lab</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow" data-i18n="heroEyebrow">Backend Review Tool</p>
+          <h1 data-i18n="pageTitle">Backend Quiz Lab</h1>
+          <p class="intro" data-i18n="heroIntro">
+            Practice Java, SQL, Spring Boot, Kafka, Git, and database concepts
+            with focused quizzes and answer reviews.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <label class="language-picker">
+            <span data-i18n="language">Language</span>
+            <select id="languageSelect" aria-label="Language">
+              <option value="en">English</option>
+              <option value="ko">한국어</option>
+              <option value="zh">繁體中文</option>
+            </select>
+          </label>
+          <div class="hero-stats" aria-label="Question bank summary">
+          <div>
+            <span id="questionTotal">0</span>
+            <small data-i18n="questionsStat">questions</small>
+          </div>
+        </div>
+          <div>
+            <span>3</span>
+            <small data-i18n="formatsStat">formats</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="quiz-layout">
+        <aside class="settings-panel" aria-label="Quiz settings">
+          <div class="panel-heading">
+            <h2 data-i18n="quizSetup">Quiz Setup</h2>
+            <button id="resetButton" class="icon-button" type="button" title="Reset quiz" aria-label="Reset quiz">
+              ↻
+            </button>
+          </div>
+
+          <label class="field">
+            <span data-i18n="topic">Topic</span>
+            <select id="topicSelect"></select>
+          </label>
+
+          <fieldset class="field-group">
+            <legend data-i18n="level">Level</legend>
+            <div class="segmented" id="levelGroup">
+              <label><input type="radio" name="level" value="easy" checked /><span data-i18n="easy">Easy</span></label>
+              <label><input type="radio" name="level" value="medium" /><span data-i18n="medium">Medium</span></label>
+              <label><input type="radio" name="level" value="hard" /><span data-i18n="hard">Hard</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend data-i18n="type">Type</legend>
+            <div class="stacked-options" id="typeGroup">
+              <label><input type="radio" name="type" value="choice" checked /><span data-i18n="choice">Multiple Choice</span></label>
+              <label><input type="radio" name="type" value="trueFalse" /><span data-i18n="trueFalse">True / False</span></label>
+              <label><input type="radio" name="type" value="short" /><span data-i18n="short">Short Answer</span></label>
+            </div>
+          </fieldset>
+
+          <label class="field">
+            <span data-i18n="questionCount">Number of questions</span>
+            <select id="countSelect">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+            </select>
+          </label>
+
+          <button id="startButton" class="primary-button" type="button" data-i18n="startQuiz">Start Quiz</button>
+          <p id="availabilityNote" class="note" aria-live="polite"></p>
+        </aside>
+
+        <section class="workspace" aria-live="polite">
+          <div id="emptyState" class="state-panel">
+            <p class="eyebrow" data-i18n="ready">Ready</p>
+            <h2 data-i18n="emptyTitle">Choose a topic and start practicing.</h2>
+            <p data-i18n="emptyBody">
+              The quiz adapts to your selected topic, level, and question type.
+              Results include corrections and explanations.
+            </p>
+          </div>
+
+          <div id="quizState" class="state-panel hidden">
+            <div class="quiz-topline">
+              <span id="questionProgress"></span>
+              <span id="scorePill" class="pill"></span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progressBar"></div>
+            </div>
+            <h2 id="questionText"></h2>
+            <div id="answerArea" class="answer-area"></div>
+            <div id="feedback" class="feedback hidden"></div>
+            <div class="actions">
+              <button id="checkButton" class="primary-button" type="button" data-i18n="checkAnswer">Check Answer</button>
+              <button id="nextButton" class="secondary-button hidden" type="button" data-i18n="next">Next</button>
+            </div>
+          </div>
+
+          <div id="resultState" class="state-panel hidden">
+            <p class="eyebrow" data-i18n="quizComplete">Quiz Complete</p>
+            <h2 id="resultScore"></h2>
+            <div class="result-grid">
+              <div><span id="correctCount"></span><small data-i18n="correct">Correct</small></div>
+              <div><span id="wrongCount"></span><small data-i18n="needsReview">Needs Review</small></div>
+              <div><span id="accuracy"></span><small data-i18n="accuracy">Accuracy</small></div>
+            </div>
+            <div class="actions">
+              <button id="reviewButton" class="secondary-button" type="button" data-i18n="reviewAnswers">Review Answers</button>
+              <button id="againButton" class="primary-button" type="button" data-i18n="takeAnother">Take Another Quiz</button>
+            </div>
+          </div>
+
+          <div id="reviewState" class="state-panel hidden">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" data-i18n="review">Review</p>
+                <h2 data-i18n="answersAndExplanations">Answers and explanations</h2>
+              </div>
+              <button id="backToResultButton" class="secondary-button compact" type="button" data-i18n="result">Result</button>
+            </div>
+            <div id="reviewList" class="review-list"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./questions.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
