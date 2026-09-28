@@ -312,9 +312,24 @@ const questionTranslations = {
   }
 };
 
+const explanationTranslations = {
+  "Which keyword is used to create a class in Java?": { ko: "class 키워드는 Java 클래스를 선언합니다. 객체는 클래스에서 생성됩니다.", zh: "class 關鍵字用來宣告 Java 類別；物件則由類別建立。" },
+  "Which Java type is commonly used for true or false values?": { ko: "boolean은 true 또는 false 값을 저장하는 기본 타입입니다.", zh: "boolean 是用來儲存 true 或 false 的基本型別。" },
+  "Java source files usually use the `.java` extension.": { ko: "Java 소스 코드는 보통 `.java` 파일에 작성되며 바이트코드로 컴파일됩니다.", zh: "Java 原始碼通常寫在 `.java` 檔案中，之後會編譯成位元組碼。" },
+  "What method name is the usual entry point of a Java application?": { ko: "JVM은 일반적인 Java 프로그램을 main 메서드에서 시작합니다.", zh: "JVM 通常會從 main 方法啟動一般的 Java 程式。" },
+  "Which statement about Java interfaces is correct?": { ko: "Java에서는 클래스가 여러 인터페이스를 구현할 수 있지만 클래스 상속은 하나만 가능합니다.", zh: "Java 類別可以實作多個介面，但類別繼承只能繼承一個父類別。" },
+  "Which collection does not allow duplicate elements?": { ko: "Set은 중복 요소를 허용하지 않습니다. Map은 키와 값의 쌍을 저장합니다.", zh: "Set 不允許重複元素；Map 儲存的是鍵值對。" },
+  "HashMap guarantees insertion order.": { ko: "HashMap은 순서를 보장하지 않습니다. 삽입 순서가 필요하면 LinkedHashMap을 사용하세요.", zh: "HashMap 不保證迭代順序；若需要插入順序，請使用 LinkedHashMap。" },
+  "What Java feature lets one method name have different parameter lists?": { ko: "메서드 오버로딩은 같은 이름에 서로 다른 매개변수 목록을 허용합니다.", zh: "方法多載允許相同的方法名稱搭配不同的參數列表。" },
+  "Which statement about `equals` and `hashCode` is correct?": { ko: "equals로 같은 객체는 같은 hashCode를 반환해야 합니다.", zh: "若 equals 判定物件相等，它們必須回傳相同的 hashCode。" },
+  "A checked exception must be caught or declared by the method signature.": { ko: "검사 예외는 catch로 처리하거나 throws로 선언해야 합니다.", zh: "受檢例外必須由 catch 處理，或使用 throws 宣告。" },
+  "Which keyword marks a variable as not serialized by Java serialization?": { ko: "transient 키워드는 해당 필드를 기본 Java 직렬화 대상에서 제외합니다.", zh: "transient 關鍵字會將欄位排除在 Java 預設序列化之外。" }
+};
+
 function localizedQuestion(question) {
   const translated = questionTranslations[question.question]?.[state.language];
-  return translated ? { ...question, question: translated } : question;
+  const explanation = explanationTranslations[question.question]?.[state.language];
+  return { ...question, ...(translated ? { question: translated } : {}), ...(explanation ? { explanation } : {}) };
 }
 
 function t(key, values = {}) {
@@ -635,6 +650,7 @@ function checkAnswer() {
   }
 
   const correct = isCorrectAnswer(question, userAnswer);
+  const displayQuestion = localizedQuestion(question);
   state.answers.push({
     question,
     userAnswer,
@@ -646,10 +662,10 @@ function checkAnswer() {
   els.feedback.className = `feedback ${correct ? "correct" : "wrong"}`;
   const correctAnswer = Array.isArray(question.answer) ? question.answer.join(", ") : question.answer;
   els.feedback.innerHTML = correct
-    ? `<strong>${escapeHtml(t("correctFeedback"))}</strong> ${escapeHtml(question.explanation)}${optionExplanationHtml(question)}`
+    ? `<strong>${escapeHtml(t("correctFeedback"))}</strong> ${escapeHtml(displayQuestion.explanation)}${optionExplanationHtml(displayQuestion)}`
     : `<strong>${escapeHtml(t("wrongFeedback"))}</strong> ${escapeHtml(t("correctAnswer"))} <strong>${escapeHtml(
         correctAnswer
-      )}</strong><br>${escapeHtml(question.explanation)}${optionExplanationHtml(question)}`;
+      )}</strong><br>${escapeHtml(displayQuestion.explanation)}${optionExplanationHtml(displayQuestion)}`;
 
   els.progressBar.style.width = `${((state.currentIndex + 1) / state.questions.length) * 100}%`;
   els.scorePill.textContent = t("scorePill", {
@@ -693,7 +709,7 @@ function renderReview() {
           <h3>${index + 1}. ${escapeHtml(displayQuestion.question)}</h3>
           <p><strong>${escapeHtml(t("yourAnswer"))}</strong> ${escapeHtml(item.userAnswer || t("blank"))}</p>
           <p><strong>${escapeHtml(t("correctAnswer"))}</strong> ${escapeHtml(answer)}</p>
-          <p><strong>${escapeHtml(t("explanation"))}</strong> ${escapeHtml(item.question.explanation)}</p>
+          <p><strong>${escapeHtml(t("explanation"))}</strong> ${escapeHtml(displayQuestion.explanation)}</p>
         </article>
       `;
     })
